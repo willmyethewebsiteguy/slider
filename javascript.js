@@ -8,7 +8,7 @@
   const ps = {
     id: 1,
     cssId: 'wm-section-slider',
-    cssFile: 'https://assets.codepen.io/3198845/WMSlider2TESTING.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0.001/styles.min.css'
   };
   const defaults = {
     settings: {
