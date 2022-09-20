@@ -8,7 +8,7 @@
   const ps = {
     id: 1,
     cssId: 'wm-section-slider',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0.001/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0/styles.min.css'
   };
   const defaults = {
     settings: {
@@ -162,8 +162,7 @@
         if (settings[item] === 'true') settings[item] = true;
       })
     }
-
-    function getSettingsFromCSS(instance){
+    /*function getSettingsFromCSS(instance){
       let settings = instance.settings.swiperSettings,
           section = instance.settings.cssSettingsEl,
           json = utils.getPropertyValue(section, '--json'),
@@ -197,11 +196,9 @@
         if (settings[item] === ('false' || "false")) settings[item] = false;
         if (settings[item] === ('true' || "true")) settings[item] = true;
       })
-      console.log(settings)
-    }
+    }*/
 
-    function Constructor(el) {
-
+    function Constructor(el, settings = {}) {
       this.addCSS();
       this.settings = {
         container: el,
@@ -214,26 +211,32 @@
         get pluginEl() {
           return this.container.querySelector('.wm-slide:not(.swiper-slide-duplicate) [data-wm-plugin="section-slider"]');
         },
-        swiperSettings: JSON.parse(JSON.stringify(defaults.settings))
+        //swiperSettings: JSON.parse(JSON.stringify(defaults.settings))
       };
 
       //Get Settings
       if (this.settings.isFromBlock){
         getSettingsFromBlock(this);
       } else {
-        getSettingsFromCSS(this)
+        //getSettingsFromCSS(this)
       }
       
+      this.swiperSettings = Object.assign(
+        JSON.parse(JSON.stringify(defaults.settings)), 
+        settings);
+      
       //Set Aspect Ratio if one
-      if (this.settings.swiperSettings.aspectRatio){
-        let ar = this.settings.swiperSettings.aspectRatio;
+      if (this.swiperSettings.aspectRatio){
+        let ar = this.swiperSettings.aspectRatio;
+        console.log(ar)
         this.settings.container.setAttribute('data-aspect-ratio', ar);
-        
+        this.settings.container.style.setProperty('--aspect-ratio', ar)
       }
 
       window[`swiper${ps.id}`] = new Swiper(
         this.settings.container, 
-        this.settings.swiperSettings);
+        this.swiperSettings
+      );
     }
 
     /* Add CSS */
@@ -486,10 +489,46 @@
       }
     }
 
+    function getSettingsFromCSS(instance){
+      let settings = instance.settings.swiperSettings,
+          section = instance.settings.settingsEl,
+          json = utils.getPropertyValue(section, '--json'),
+          effect = utils.getPropertyValue(section, '--effect'),
+          direction = utils.getPropertyValue(section, '--direction'),
+          touchAction = utils.getPropertyValue(section, '--touch-move'),
+          aspectRatio = utils.getPropertyValue(section, '--aspect-ratio'),
+          autoplay = utils.getPropertyValue(section, '--autoplay');
+      
+      function clean(str) {
+        str = str.trim();
+        if (str.substr(-1) === '"') str = str.slice(0, -1);
+        if (str.substr(0, 1) === '"') str = str.substr(1);
+        str = str.replaceAll('\\', '');
+        return str;
+      }
+
+      if (json) {
+        json = JSON.parse(clean(json));
+        Object.assign(settings, json);
+      }
+      if (touchAction) settings.allowTouchMove = clean(touchAction);
+      if (effect) settings.effect = clean(effect);
+      if (direction) settings.direction = clean(direction);
+      if (aspectRatio) settings.aspectRatio = Math.round(eval(eval(aspectRatio)) * 1000) / 1000;
+      if (autoplay) settings.autoplay = { delay: parseFloat(autoplay) * 1000 };
+
+      //Object.assign(settings, dataset);
+      Object.keys(settings).forEach(item => {
+        if (settings[item] === ('false' || "false")) settings[item] = false;
+        if (settings[item] === ('true' || "true")) settings[item] = true;
+      })
+    }
+
     function Constructor(el) { 
       this.settings = {
         settingsEl: el,
         id: ps.id,
+        swiperSettings: {},
         get isFirstSection() {
           if (!utils.ssVersion == "7.1") return false;
           return this.container === document.querySelector('#sections').children[0]
@@ -511,6 +550,8 @@
         }
       }
       
+      getSettingsFromCSS(this)
+      
       //Inject Template
       buildContainer(this);
       
@@ -523,7 +564,7 @@
       //Listen for removal
       destroyListener(this)
       
-      new initSlider(this.settings.container);
+      new initSlider(this.settings.container, this.settings.swiperSettings);
     }
     
       /** 
