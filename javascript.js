@@ -145,7 +145,6 @@
 
       window.addEventListener('DOMContentLoaded', handleEvent)
     }
-
     function getSettingsFromBlock(instance){
       let settings = instance.settings.swiperSettings;
 
@@ -162,41 +161,6 @@
         if (settings[item] === 'true') settings[item] = true;
       })
     }
-    /*function getSettingsFromCSS(instance){
-      let settings = instance.settings.swiperSettings,
-          section = instance.settings.cssSettingsEl,
-          json = utils.getPropertyValue(section, '--json'),
-          effect = utils.getPropertyValue(section, '--effect'),
-          direction = utils.getPropertyValue(section, '--direction'),
-          touchAction = utils.getPropertyValue(section, '--touch-move'),
-          aspectRatio = utils.getPropertyValue(section, '--aspect-ratio'),
-          autoplay = utils.getPropertyValue(section, '--autoplay');
-      
-      function clean(str) {
-        if (str.substr(-1) === '"') str = str.slice(0, -1);
-        if (str.substr(0, 1) === '"') str = str.substr(1);
-        str = str.replaceAll('\\', '');
-        return str;
-      }
-
-      if (json) {
-        json = JSON.parse(clean(json));
-        Object.assign(settings, json);
-      }
-      if (touchAction) settings.allowTouchMove = clean(touchAction);
-      if (effect) settings.effect = clean(effect);
-      if (direction) settings.direction = clean(direction);
-      if (aspectRatio) settings.aspectRatio = Math.round(parseFloat(aspectRatio) * 1000) / 1000;
-      if (autoplay) settings.autoplay = {
-        delay: parseFloat(autoplay) * 1000
-      };
-
-      //Object.assign(settings, dataset);
-      Object.keys(settings).forEach(item => {
-        if (settings[item] === ('false' || "false")) settings[item] = false;
-        if (settings[item] === ('true' || "true")) settings[item] = true;
-      })
-    }*/
 
     function Constructor(el, settings = {}) {
       this.addCSS();
@@ -217,18 +181,16 @@
       //Get Settings
       if (this.settings.isFromBlock){
         getSettingsFromBlock(this);
-      } else {
-        //getSettingsFromCSS(this)
       }
       
       this.swiperSettings = Object.assign(
         JSON.parse(JSON.stringify(defaults.settings)), 
-        settings);
+        settings
+      );
       
       //Set Aspect Ratio if one
       if (this.swiperSettings.aspectRatio){
         let ar = this.swiperSettings.aspectRatio;
-        console.log(ar)
         this.settings.container.setAttribute('data-aspect-ratio', ar);
         this.settings.container.style.setProperty('--aspect-ratio', ar)
       }
@@ -525,6 +487,7 @@
     }
 
     function Constructor(el) { 
+      
       this.settings = {
         settingsEl: el,
         id: ps.id,
@@ -539,9 +502,6 @@
         get container() {
           return document.querySelector(`[data-wm-slider="${this.id}"]`)
         },
-        get slideCount() {
-          return utils.getPropertyValue(this.settingsEl, '--slides') || 3;
-        },
         get wrapper() {
           return this.container.querySelector(':scope > .swiper-wrapper')
         },
@@ -549,6 +509,8 @@
           return this.container.querySelectorAll('.wm-slide:not(.swiper-slide-duplicate)')
         }
       }
+      
+      this.settings.slideCount = utils.getPropertyValue(this.settings.settingsEl, '--slides') || 3;
       
       getSettingsFromCSS(this)
       
@@ -566,12 +528,6 @@
       
       new initSlider(this.settings.container, this.settings.swiperSettings);
     }
-    
-      /** 
-  * Mutation Observer
-  * Remove Section From Announcement Bar 
-  * When Jumping into Edit Mode
-  **/
 
     return Constructor;
   }());
