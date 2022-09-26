@@ -1,14 +1,8 @@
-/*
- * Things to Still Consider:
- - Maintain Aspect Ratio of Sections
- - Stop Auto Play when out of Focus
- - Prevent DOM Manipulation When Editing In 7.0
-*/
 (function(){
   const ps = {
     id: 1,
     cssId: 'wm-section-slider',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0/styles.min.css
   };
   const defaults = {
     settings: {
@@ -145,6 +139,43 @@
 
       window.addEventListener('DOMContentLoaded', handleEvent)
     }
+
+    function getSettingsFromCSS(instance){
+      let settings = instance.settings.cssSettings,
+          section = instance.settings.container,
+          json = utils.getPropertyValue(section, '--json'),
+          effect = utils.getPropertyValue(section, '--effect'),
+          direction = utils.getPropertyValue(section, '--direction'),
+          touchAction = utils.getPropertyValue(section, '--touch-move'),
+          aspectRatio = utils.getPropertyValue(section, '--aspect-ratio'),
+          autoplay = utils.getPropertyValue(section, '--autoplay');
+
+      function clean(str) {
+        str = str.trim();
+        if (str.substr(-1) === '"') str = str.slice(0, -1);
+        if (str.substr(0, 1) === '"') str = str.substr(1);
+        str = str.replaceAll('\\', '');
+        return str;
+      }
+
+      if (json) {
+        json = JSON.parse(clean(json));
+        Object.assign(settings, json);
+      }
+      if (touchAction) settings.allowTouchMove = clean(touchAction);
+      if (effect) settings.effect = clean(effect);
+      if (direction) settings.direction = clean(direction);
+      if (aspectRatio) settings.aspectRatio = Math.round(eval(eval(aspectRatio)) * 1000) / 1000;
+      if (autoplay) settings.autoplay = { delay: parseFloat(autoplay) * 1000 };
+      console.log(autoplay)
+      console.log(settings)
+
+      //Object.assign(settings, dataset);
+      Object.keys(settings).forEach(item => {
+        if (settings[item] === ('false' || "false")) settings[item] = false;
+        if (settings[item] === ('true' || "true")) settings[item] = true;
+      })
+    }
     function getSettingsFromBlock(instance){
       let settings = instance.settings.swiperSettings;
 
@@ -161,11 +192,11 @@
         if (settings[item] === 'true') settings[item] = true;
       })
     }
-
     function Constructor(el, settings = {}) {
       this.addCSS();
       this.settings = {
         container: el,
+        cssSettings: {},
         get cssSettingsEl(){
           return this.container.querySelector('.wm-slide:not(.swiper-slide-duplicate)');
         },
@@ -183,8 +214,11 @@
         getSettingsFromBlock(this);
       }
       
+      getSettingsFromCSS(this)
+      
       this.swiperSettings = Object.assign(
         JSON.parse(JSON.stringify(defaults.settings)), 
+        this.settings.cssSettings,
         settings
       );
       
