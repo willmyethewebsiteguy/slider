@@ -2,7 +2,7 @@
   const ps = {
     id: 1,
     cssId: 'wm-section-slider',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0/styles.min.css
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/slider@4.0/styles.min.css'
   };
   const defaults = {
     settings: {
